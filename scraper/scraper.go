@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type Fact struct {
@@ -24,20 +25,33 @@ func Check(e error, message string) {
 	}
 }
 
-func writeJSON(data []Fact) {
+func writeJSON(data []Fact, fileName *string) {
 	file, err := json.MarshalIndent(data, "", " ")
 	Check(err, "Unable to create JSON file")
 
-	_ = ioutil.WriteFile("rhinofacts.json", file, 0644)
+	_ = ioutil.WriteFile(*fileName, file, 0644)
 }
 
-func Scraper() {
+// factretriever.com/rhino-facts
+// .factsList li
+// test.json
+func Scraper(pathToScrape, selectorToQuery, fileName string) {
+	var domain string
+	domainLastIndex := strings.Index(pathToScrape, "/")
+
+	if domainLastIndex <= 0 {
+		domain = pathToScrape
+	} else {
+		domain = pathToScrape[0:domainLastIndex]
+	}
+
 	allFacts := make([]Fact, 0)
 
 	collector := colly.NewCollector(
-		colly.AllowedDomains("factretriever.com", "www.factretriever.com"),
+		colly.AllowedDomains(domain, "www."+domain),
 	)
 
+	fmt.Println(selectorToQuery)
 	collector.OnHTML(".factsList li", func(element *colly.HTMLElement) {
 		factID, err := strconv.Atoi(element.Attr("id"))
 		Check(err, "")
@@ -56,9 +70,9 @@ func Scraper() {
 		fmt.Println("Visiting", request.URL.String())
 	})
 
-	collector.Visit("https://www.factretriever.com/rhino-facts")
+	collector.Visit("https://" + pathToScrape)
 
-	writeJSON(allFacts)
+	writeJSON(allFacts, &fileName)
 
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", " ")
