@@ -2,7 +2,6 @@ package prompt
 
 import (
 	"fmt"
-	// "os"
 )
 
 type FakeInput struct {
