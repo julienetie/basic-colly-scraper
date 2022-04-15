@@ -1,7 +1,10 @@
 package scraper
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/gocolly/colly"
+	"os"
 	"strconv"
 )
 
@@ -37,5 +40,13 @@ func Scraper() {
 		allFacts = append(allFacts, fact)
 	})
 
+	collector.OnRequest(func(request *colly.Request) {
+		fmt.Println("Visiting", request.URL.String())
+	})
+
 	collector.Visit("https://www.factretriever.com/rhino-facts")
+
+	encoder := json.NewEncoder(os.Stdout)
+	encoder.SetIndent("", " ")
+	encoder.Encode(allFacts)
 }
