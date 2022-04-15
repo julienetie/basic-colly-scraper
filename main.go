@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/gocolly/colly/scraper"
+	"github.com/julienetie/basic-colly-scraper/scraper"
 )
 
 func main() {
-	Scraper()
+	scraper.Scraper()
 }
