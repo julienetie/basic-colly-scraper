@@ -5,11 +5,14 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"math/big"
+	"os"
 	"strconv"
 	"testing"
 )
 
 const loreIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis vel hendrerit odio. "
+
+var fileName = "test-create-json-file.json"
 
 // factretriever.com/rhino-facts
 // .factsList li
@@ -31,8 +34,8 @@ type EntryTest struct {
 	Description string `json:"description"`
 }
 
+// **CAUTION** Test will create and delete `fileName`
 func TestCreateJSONFile(t *testing.T) {
-	fileName := "test-create-json-file.json"
 	entries := make([]Entry, 0)
 
 	for i := 1; i <= 10; i++ {
@@ -61,4 +64,8 @@ func TestCreateJSONFile(t *testing.T) {
 	if data[0].Description != loreIpsum+"1" {
 		t.Errorf("First entry's description's number is not 1")
 	}
+
+	// Delete test file
+	err = os.Remove(fileName)
+	check(t, err)
 }
