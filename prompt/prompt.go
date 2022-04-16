@@ -37,7 +37,11 @@ func setPath(pathToScrape *string) {
 
 func setSelector(selectorToQuery *string) {
 	fmt.Printf(`Define the selector to query (XPath or CSS selector): `)
-	fmt.Scanln(selectorToQuery)
+	scanner := bufio.NewScanner(os.Stdin)
+	if scanner.Scan() {
+		*selectorToQuery = scanner.Text()
+	}
+	// fmt.Scanln(pathToScrape)
 	isValid, message := isInputValid(*selectorToQuery)
 
 	if isValid != true {

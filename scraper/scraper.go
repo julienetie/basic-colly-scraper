@@ -7,12 +7,11 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 )
 
-type Fact struct {
-	ID          int    `json:"id"`
+type Entry struct {
+	Selector    string `json:selector`
 	Description string `json:"description"`
 }
 
@@ -25,56 +24,57 @@ func Check(e error, message string) {
 	}
 }
 
-func writeJSON(data []Fact, fileName *string) {
+func CreateJSONFile(data *[]Entry, fileName *string) {
 	file, err := json.MarshalIndent(data, "", " ")
 	Check(err, "Unable to create JSON file")
-
 	_ = ioutil.WriteFile(*fileName, file, 0644)
 }
 
-// factretriever.com/rhino-facts
-// .factsList li
-// test.json
+func WriteStdout(entries *[]Entry) {
+	encoder := json.NewEncoder(os.Stdout)
+	encoder.SetIndent("", " ")
+	encoder.Encode(entries)
+}
+
+func abstractDomain(pathToScrape *string) string {
+	domainLastIndex := strings.Index(*pathToScrape, "/")
+	if domainLastIndex > 0 {
+		return (*pathToScrape)[0:domainLastIndex]
+	}
+	return *pathToScrape
+}
+
 func Scraper(pathToScrape, selectorToQuery, fileName string) {
 	var domain string
-	domainLastIndex := strings.Index(pathToScrape, "/")
+	entries := make([]Entry, 0)
 
-	if domainLastIndex <= 0 {
-		domain = pathToScrape
-	} else {
-		domain = pathToScrape[0:domainLastIndex]
-	}
+	// Get the domain from the path
+	domain = abstractDomain(&pathToScrape)
 
-	allFacts := make([]Fact, 0)
-
+	// Setup scraper
 	collector := colly.NewCollector(
 		colly.AllowedDomains(domain, "www."+domain),
 	)
-
-	fmt.Println(selectorToQuery)
-	collector.OnHTML(".factsList li", func(element *colly.HTMLElement) {
-		factID, err := strconv.Atoi(element.Attr("id"))
-		Check(err, "")
-
+	collector.OnHTML(selectorToQuery, func(element *colly.HTMLElement) {
 		factDesc := element.Text
 
-		fact := Fact{
-			ID:          factID,
+		entry := Entry{
+			Selector:    selectorToQuery,
 			Description: factDesc,
 		}
 
-		allFacts = append(allFacts, fact)
+		entries = append(entries, entry)
 	})
 
+	// Notifiy when page request starts
 	collector.OnRequest(func(request *colly.Request) {
 		fmt.Println("Visiting", request.URL.String())
 	})
-
 	collector.Visit("https://" + pathToScrape)
 
-	writeJSON(allFacts, &fileName)
+	// Write to file
+	CreateJSONFile(&entries, &fileName)
 
-	encoder := json.NewEncoder(os.Stdout)
-	encoder.SetIndent("", " ")
-	encoder.Encode(allFacts)
+	// Write to stdout
+	WriteStdout(&entries)
 }
