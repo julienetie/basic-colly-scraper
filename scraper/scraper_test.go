@@ -25,7 +25,8 @@ var fileName = "test-create-json-file.json"
 func check(t *testing.T, e error) {
 	t.Helper()
 	if e != nil {
-		t.Errorf("Err error")
+		s := e.Error()
+		t.Errorf(s)
 	}
 }
 
@@ -68,4 +69,12 @@ func TestCreateJSONFile(t *testing.T) {
 	// Delete test file
 	err = os.Remove(fileName)
 	check(t, err)
+}
+
+func TestAbstractDomain(t *testing.T) {
+	path := "google.com/hello-world/123"
+	domain := AbstractDomain(&path)
+	if domain != "google.com" {
+		t.Errorf("Domain was not abstracted correctly")
+	}
 }

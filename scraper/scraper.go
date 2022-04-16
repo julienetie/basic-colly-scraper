@@ -36,7 +36,7 @@ func WriteStdout(entries *[]Entry) {
 	encoder.Encode(entries)
 }
 
-func abstractDomain(pathToScrape *string) string {
+func AbstractDomain(pathToScrape *string) string {
 	domainLastIndex := strings.Index(*pathToScrape, "/")
 	if domainLastIndex > 0 {
 		return (*pathToScrape)[0:domainLastIndex]
@@ -49,7 +49,7 @@ func Scraper(pathToScrape, selectorToQuery, fileName string) {
 	entries := make([]Entry, 0)
 
 	// Get the domain from the path
-	domain = abstractDomain(&pathToScrape)
+	domain = AbstractDomain(&pathToScrape)
 
 	// Setup scraper
 	collector := colly.NewCollector(
