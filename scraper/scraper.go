@@ -44,22 +44,15 @@ func AbstractDomain(pathToScrape *string) string {
 	return *pathToScrape
 }
 
-func Scraper(pathToScrape, selectorToQuery, fileName string) {
-	var domain string
-	entries := make([]Entry, 0)
-
-	// Get the domain from the path
-	domain = AbstractDomain(&pathToScrape)
-
-	// Setup scraper
+func Crawler(domain, selectorToQuery, pathToScrape *string, entries []Entry) []Entry {
 	collector := colly.NewCollector(
-		colly.AllowedDomains(domain, "www."+domain),
+		colly.AllowedDomains(*domain, "www."+*domain),
 	)
-	collector.OnHTML(selectorToQuery, func(element *colly.HTMLElement) {
+	collector.OnHTML(*selectorToQuery, func(element *colly.HTMLElement) {
 		factDesc := element.Text
 
 		entry := Entry{
-			Selector:    selectorToQuery,
+			Selector:    *selectorToQuery,
 			Description: factDesc,
 		}
 
@@ -70,11 +63,23 @@ func Scraper(pathToScrape, selectorToQuery, fileName string) {
 	collector.OnRequest(func(request *colly.Request) {
 		fmt.Println("Visiting", request.URL.String())
 	})
-	collector.Visit("https://" + pathToScrape)
+	collector.Visit("https://" + *pathToScrape)
+
+	return entries
+}
+
+func Scraper(pathToScrape, selectorToQuery, fileName string) {
+	var domain string
+	entries := make([]Entry, 0)
+
+	// Get the domain from the path
+	domain = AbstractDomain(&pathToScrape)
+
+	filledEntries := Crawler(&domain, &selectorToQuery, &pathToScrape, entries)
 
 	// Write to file
-	CreateJSONFile(&entries, &fileName)
+	CreateJSONFile(&filledEntries, &fileName)
 
 	// Write to stdout
-	WriteStdout(&entries)
+	WriteStdout(&filledEntries)
 }

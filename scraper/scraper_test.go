@@ -14,14 +14,6 @@ const loreIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis
 
 var fileName = "test-create-json-file.json"
 
-// factretriever.com/rhino-facts
-// .factsList li
-// test.json
-// func TestScraper(t *testing.T) {
-// 	// Scraper()
-// 	scraper()
-// }
-
 func check(t *testing.T, e error) {
 	t.Helper()
 	if e != nil {
@@ -33,6 +25,11 @@ func check(t *testing.T, e error) {
 type EntryTest struct {
 	Selector    string `json:selector`
 	Description string `json:"description"`
+}
+
+func TestCrawler(t *testing.T) {
+	t.Skip()
+	// @Todo
 }
 
 // **CAUTION** Test will create and delete `fileName`
@@ -77,4 +74,12 @@ func TestAbstractDomain(t *testing.T) {
 	if domain != "google.com" {
 		t.Errorf("Domain was not abstracted correctly")
 	}
+}
+
+func ExampleScraper() {
+	Scraper(
+		"en.wikipedia.org/wiki/Moons_of_Jupiter",
+		"tr",
+		"jupiter-moons-example.json",
+	)
 }
